@@ -2,9 +2,15 @@
 
 一个专为 **NAS 视频** 做的 Android 播放器：五种协议一套播放内核，海报墙 + 文件浏览双模式，交互对齐主流播放器（MX / VLC / 迅雷影音）的习惯。
 
-- 包名 `com.cloudnest.player` · 版本 1.1.2 · minSdk 24（Android 7.0） · targetSdk 34
+- 包名 `com.cloudnest.player` · 版本 **1.1.3** · minSdk 24（Android 7.0） · targetSdk 34
 - 技术栈：Kotlin + Jetpack Compose + Media3 (ExoPlayer)
 - 无广告、无账号、无云服务依赖，你的视频只在你的 NAS 和手机之间流转
+
+## 下载最新版
+
+[**NestPlayer-1.1.3.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.1.3.apk) — 17.9 MB，已签名，可直接覆盖升级
+
+更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。当前版本修掉了 1.1.2 里播放 `.ts` 会闪退的回归（`SeekMap.getDurationUs` 自递归导致的 `StackOverflowError`），详见 [v1.1.3 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.1.3)。
 
 ## 功能
 
