@@ -150,6 +150,24 @@ object Store {
 
     fun metadata(key: String): MetadataInfo? = _data.value.metadataCache[key]
 
+    fun replaceMusic(serverId: String, tracks: List<MusicTrack>) = update { cur ->
+        cur.copy(music = cur.music.filterNot { it.serverId == serverId } + tracks)
+    }
+
+    fun musicOf(serverId: String?): List<MusicTrack> {
+        val id = serverId ?: return _data.value.music
+        return _data.value.music.filter { it.serverId == id }
+    }
+
+    fun updateMusicTrack(track: MusicTrack) = update { cur ->
+        val list = cur.music.toMutableList()
+        val i = list.indexOfFirst { it.id == track.id }
+        if (i >= 0) list[i] = track
+        cur.copy(music = list)
+    }
+
+    fun clearMusic() = update { it.copy(music = emptyList()) }
+
     fun setLastScan(serverId: String) = update { cur ->
         cur.copy(servers = cur.servers.map { if (it.id == serverId) it.copy(lastScan = System.currentTimeMillis()) else it })
     }

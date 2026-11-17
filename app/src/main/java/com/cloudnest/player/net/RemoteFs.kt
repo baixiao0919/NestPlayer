@@ -113,10 +113,16 @@ object MediaFiles {
         "f4v", "m2v", "tp", "trp", "evo", "ogm", "dat", "iso"
     )
     val subExt = setOf("srt", "ass", "ssa", "vtt", "sub", "smi", "txt")
+    val audioExt = setOf(
+        "mp3", "flac", "ape", "wav", "m4a", "aac", "ogg", "oga", "opus", "wma", "dsf", "dff",
+        "aiff", "aif", "alac", "mka", "amr", "ac3", "dts", "mp2", "tta", "wv", "mid", "midi"
+    )
 
     fun ext(name: String): String = name.substringAfterLast('.', "").lowercase()
 
     fun isVideo(name: String): Boolean = ext(name) in videoExt
+
+    fun isAudio(name: String): Boolean = ext(name) in audioExt
 
     fun isSubtitle(name: String): Boolean = ext(name) in subExt
 
@@ -141,6 +147,19 @@ object MediaFiles {
         "ass", "ssa" -> "text/x-ssa"
         "vtt" -> "text/vtt"
         "sub" -> "text/plain"
+        "mp3" -> "audio/mpeg"
+        "flac" -> "audio/flac"
+        "ape" -> "audio/x-ape"
+        "wav" -> "audio/wav"
+        "m4a", "alac" -> "audio/mp4"
+        "aac" -> "audio/aac"
+        "ogg", "oga", "opus" -> "audio/ogg"
+        "wma" -> "audio/x-ms-wma"
+        "mka" -> "audio/x-matroska"
+        "dsf", "dff" -> "audio/x-dsd"
+        "aiff", "aif" -> "audio/aiff"
+        "amr" -> "audio/amr"
+        "mid", "midi" -> "audio/midi"
         "jpg", "jpeg" -> "image/jpeg"
         "png" -> "image/png"
         "webp" -> "image/webp"

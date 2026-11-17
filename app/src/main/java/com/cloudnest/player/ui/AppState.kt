@@ -25,6 +25,7 @@ sealed interface Screen {
     data object Servers : Screen
     data object Settings : Screen
     data object Search : Screen
+    data object Music : Screen
 }
 
 class AppState(val context: Context, private val scope: CoroutineScope) {
@@ -36,6 +37,7 @@ class AppState(val context: Context, private val scope: CoroutineScope) {
 
     var activeServerId by mutableStateOf<String?>(Store.data.value.servers.firstOrNull()?.id)
     var scanningMessage by mutableStateOf<String?>(null)
+    var musicScanningMessage by mutableStateOf<String?>(null)
     var message by mutableStateOf<String?>(null)
 
     fun push(screen: Screen) {
@@ -125,6 +127,45 @@ class AppState(val context: Context, private val scope: CoroutineScope) {
             Store.upsertServer(server.copy(libraryPaths = existing + path))
         }
         scanServer(Store.server(serverId) ?: server, listOf(path))
+    }
+
+    /** 扫描音乐库：与视频扫描共用协议层，只是过滤器换成音频 */
+    fun scanMusic(serverId: String) {
+        if (musicScanningMessage != null) return
+        val server = Store.server(serverId) ?: return
+        scope.launch {
+            musicScanningMessage = "正在扫描 ${server.name.ifBlank { server.defaultName() }} 的音乐…"
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val fs = FsManager.get(server.id)
+                    val base = server.basePath.trim('/')
+                    val roots = when (server.protocol) {
+                        com.cloudnest.player.data.ProtocolType.SMB,
+                        com.cloudnest.player.data.ProtocolType.WEBDAV -> listOf("")
+                        com.cloudnest.player.data.ProtocolType.DLNA -> listOf("cid:0")
+                        com.cloudnest.player.data.ProtocolType.FTP -> listOf(if (base.isEmpty()) "/" else "/" + base)
+                        else -> listOf("/")
+                    }
+                    com.cloudnest.player.lib.MusicScanner.scan(
+                        fs, server.id, roots, maxDepth = 8, maxTracks = 8000
+                    ) { p ->
+                        musicScanningMessage = "已扫描 ${p.scannedDirs} 个文件夹 · 找到 ${p.foundTracks} 首"
+                    }
+                }
+            }
+            result.onSuccess { tracks ->
+                Store.replaceMusic(server.id, tracks)
+                musicScanningMessage = null
+                notify(if (tracks.isEmpty()) "没有找到音频文件，检查路径或协议设置" else "扫描完成，共 ${tracks.size} 首")
+            }.onFailure {
+                musicScanningMessage = null
+                notify("音乐扫描失败：${it.message ?: "未知错误"}")
+            }
+        }
+    }
+
+    fun openMusicPlayer() {
+        context.startActivity(com.cloudnest.player.player.MusicPlayerActivity.intent(context))
     }
 
     fun isVideo(name: String) = MediaFiles.isVideo(name)

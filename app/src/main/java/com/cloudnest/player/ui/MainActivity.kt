@@ -30,6 +30,8 @@ import com.cloudnest.player.ui.screens.BrowseScreen
 import com.cloudnest.player.ui.screens.DetailScreen
 import com.cloudnest.player.ui.screens.HomeScreen
 import com.cloudnest.player.ui.screens.SearchScreen
+import com.cloudnest.player.ui.screens.MusicScreen
+import com.cloudnest.player.ui.MiniPlayerBar
 import com.cloudnest.player.ui.screens.ServersScreen
 import com.cloudnest.player.ui.screens.SettingsScreen
 import com.cloudnest.player.ui.theme.NestTheme
@@ -37,6 +39,12 @@ import com.cloudnest.player.ui.theme.NestTheme
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            runCatching { requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1001) }
+        }
         super.onCreate(savedInstanceState)
         Store.init(this)
         StreamProxy.start()
@@ -77,16 +85,23 @@ private fun AppRoot() {
         }
     }
 
-    when (val screen = app.current) {
-        is Screen.Home -> HomeScreen(app)
-        is Screen.Browse -> BrowseScreen(app, screen.serverId, screen.path, screen.title)
-        is Screen.Detail -> DetailScreen(app, screen.itemId)
-        is Screen.Servers -> ServersScreen(app)
-        is Screen.Settings -> SettingsScreen(app)
-        is Screen.Search -> SearchScreen(app)
+    Box(Modifier.fillMaxSize()) {
+        when (val screen = app.current) {
+            is Screen.Home -> HomeScreen(app)
+            is Screen.Browse -> BrowseScreen(app, screen.serverId, screen.path, screen.title)
+            is Screen.Detail -> DetailScreen(app, screen.itemId)
+            is Screen.Servers -> ServersScreen(app)
+            is Screen.Settings -> SettingsScreen(app)
+            is Screen.Search -> SearchScreen(app)
+            is Screen.Music -> MusicScreen(app)
+        }
+        // 迷你播放条（音乐页自己会显示，避免重复）
+        if (app.current !is Screen.Music) {
+            MiniPlayerBar(Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp))
+        }
     }
 
-    app.scanningMessage?.let { msg ->
+    (app.musicScanningMessage ?: app.scanningMessage)?.let { msg ->
         Dialog(onDismissRequest = {}) {
             Surface(shape = RoundedCornerShape(22.dp), color = Color(0xFF12121A), border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))) {
                 Column(

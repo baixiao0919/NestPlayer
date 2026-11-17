@@ -35,6 +35,23 @@
         </activity>
 
         <activity
+            android:name=".player.MusicPlayerActivity"
+            android:exported="false"
+            android:theme="@style/PlayerTheme"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|smallestScreenSize"
+            android:resizeableActivity="true" />
+
+        <service
+            android:name=".player.MusicService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <activity
             android:name=".player.PlayerActivity"
             android:exported="false"
             android:theme="@style/PlayerTheme"

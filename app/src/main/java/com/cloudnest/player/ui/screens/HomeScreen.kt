@@ -250,9 +250,10 @@ fun HomeScreen(app: AppState) {
 private fun navTo(app: AppState, index: Int) {
     val server = app.currentServer() ?: return
     when (index) {
-        1 -> app.push(Screen.Browse(server.id, "", server.name.ifBlank { server.defaultName() }))
-        2 -> app.push(Screen.Search)
-        3 -> app.push(Screen.Settings)
+        1 -> app.push(Screen.Music)
+        2 -> app.push(Screen.Browse(server.id, "", server.name.ifBlank { server.defaultName() }))
+        3 -> app.push(Screen.Search)
+        4 -> app.push(Screen.Settings)
     }
 }
 

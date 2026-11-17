@@ -8,11 +8,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -21,8 +24,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -335,6 +341,7 @@ fun BottomNavBar(index: Int, modifier: Modifier = Modifier, onSelect: (Int) -> U
 
     val items = listOf(
         Item("首页", Icons.Rounded.Home),
+        Item("音乐", Icons.Rounded.MusicNote),
         Item("浏览", Icons.Rounded.Folder),
         Item("搜索", Icons.Rounded.Search),
         Item("设置", Icons.Rounded.Settings)
@@ -342,7 +349,7 @@ fun BottomNavBar(index: Int, modifier: Modifier = Modifier, onSelect: (Int) -> U
     Row(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 40.dp, vertical = 12.dp)
+            .padding(horizontal = 20.dp, vertical = 12.dp)
             .clip(RoundedCornerShape(26.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f), RoundedCornerShape(26.dp))
@@ -394,6 +401,86 @@ fun EmptyState(title: String, desc: String, actionLabel: String? = null, onActio
         if (actionLabel != null && onAction != null) {
             Spacer(Modifier.height(16.dp))
             GradientButton(actionLabel, onClick = onAction)
+        }
+    }
+}
+
+/** 全局迷你播放条：视频/浏览/设置页都能看到正在放的音乐 */
+@Composable
+fun MiniPlayerBar(modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var tick by remember { mutableStateOf(0L) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(500)
+            tick++
+        }
+    }
+    val id = com.cloudnest.player.player.MusicCore.currentId ?: return
+    val track = remember(tick, id) {
+        com.cloudnest.player.player.MusicCore.queue.firstOrNull { it.id == id }
+    } ?: return
+    val playing = com.cloudnest.player.player.MusicCore.player?.isPlaying == true
+    val pos = com.cloudnest.player.player.MusicCore.player?.currentPosition ?: 0L
+    val dur = (com.cloudnest.player.player.MusicCore.player?.duration ?: 0L)
+        .takeIf { it > 0 } ?: track.durationMs
+
+    Column(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFF15151E).copy(alpha = 0.97f))
+            .clickable {
+                context.startActivity(com.cloudnest.player.player.MusicPlayerActivity.intent(context))
+            }
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier.size(38.dp).clip(RoundedCornerShape(10.dp))
+                    .background(Brush.linearGradient(listOf(BrandPurple.copy(alpha = 0.5f), BrandCyan.copy(alpha = 0.3f))))
+            ) {
+                if (!track.coverPath.isNullOrBlank()) {
+                    RemoteImage(track.serverId, track.coverPath, Modifier.fillMaxSize(), track.title, 10.dp)
+                }
+            }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(track.title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(
+                    track.artist.ifBlank { track.album },
+                    color = TextSecondary, fontSize = 11.sp, maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+            Icon(
+                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, "播放/暂停",
+                tint = Color.White,
+                modifier = Modifier.size(30.dp).clip(CircleShape)
+                    .clickable {
+                        com.cloudnest.player.player.MusicCore.toggle(context)
+                        tick++
+                    }.padding(4.dp)
+            )
+            Icon(
+                Icons.Rounded.SkipNext, "下一首",
+                tint = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.size(28.dp).clip(CircleShape)
+                    .clickable {
+                        com.cloudnest.player.player.MusicCore.next()
+                        tick++
+                    }.padding(4.dp)
+            )
+        }
+        val frac = if (dur > 0) (pos.toFloat() / dur).coerceIn(0f, 1f) else 0f
+        Box(Modifier.fillMaxWidth().height(2.dp).background(Color.White.copy(alpha = 0.12f))) {
+            Box(
+                Modifier.fillMaxHeight().fillMaxWidth(frac)
+                    .background(Brush.horizontalGradient(listOf(BrandPurple, BrandCyan)))
+            )
         }
     }
 }

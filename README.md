@@ -1,16 +1,16 @@
 # 云巢影音 NestPlayer
 
-一个专为 **NAS 视频** 做的 Android 播放器：五种协议一套播放内核，海报墙 + 文件浏览双模式，交互对齐主流播放器（MX / VLC / 迅雷影音）的习惯。
+一个专为 **NAS 视频 + 音乐** 做的 Android 播放器：五种协议一套播放内核，海报墙 + 文件浏览 + 音乐库三模式，交互对齐主流播放器（MX / VLC / 迅雷影音 / 网易云）的习惯。
 
-- 包名 `com.cloudnest.player` · 版本 **1.1.3** · minSdk 24（Android 7.0） · targetSdk 34
+- 包名 `com.cloudnest.player` · 版本 **1.2.0** · minSdk 24（Android 7.0） · targetSdk 34
 - 技术栈：Kotlin + Jetpack Compose + Media3 (ExoPlayer)
 - 无广告、无账号、无云服务依赖，你的视频只在你的 NAS 和手机之间流转
 
 ## 下载最新版
 
-[**NestPlayer-1.1.3.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.1.3.apk) — 17.9 MB，已签名，可直接覆盖升级
+[**NestPlayer-1.2.0.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.2.0.apk) — 18.6 MB，已签名，可直接覆盖升级
 
-更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。当前版本修掉了 1.1.2 里播放 `.ts` 会闪退的回归（`SeekMap.getDurationUs` 自递归导致的 `StackOverflowError`），详见 [v1.1.3 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.1.3)。
+更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。1.2.0 新增 NAS 音乐播放器（音乐库/后台播放/通知栏/锁屏/歌词/均衡器），原有视频链路不变；1.1.3 修掉的 `.ts` 闪退回归（`SeekMap.getDurationUs` 自递归 `StackOverflowError`）继续保留，详见 [v1.2.0 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.2.0)。
 
 ## 功能
 
@@ -43,6 +43,15 @@
 - 倍速 0.5×–4.0×、音轨切换、字幕切换与本地外挂字幕、画面比例（适应/裁剪/拉伸）、旋转、锁屏防误触
 - 视频信息面板（分辨率/帧率/编码/码率/声道/采样率）
 - 续播记忆、播放记录持久化
+
+**音乐播放（1.2.0 新增）**
+
+- 音乐库：扫描 NAS 上的音频（mp3 / flac / m4a / aac / wav / ogg / opus / ape / wma 等），自动按 **专辑 / 艺术家 / 歌曲** 三视图归类，可搜索
+- 播放器：专辑封面背景、进度拖动、上一首/下一首、随机、单曲/列表循环、倍速 0.5×–3×、定时关闭、均衡器预设
+- 歌词：自动读同目录同名 `.lrc`（UTF-8 / GB18030），逐行同步高亮滚动
+- 元数据：切歌时异步读 ID3 / FLAC 标签与内嵌封面，不阻塞列表加载
+- 后台播放：`MediaSessionService`，通知栏、锁屏、耳机与蓝牙按键都能控制；退到其他页面有全局迷你播放条
+- 收藏、播放进度记忆（下次接着放）
 
 **TS 也能拖（重点）**
 
@@ -83,7 +92,9 @@ app/src/main/java/com/cloudnest/player/
 
 - `.ts` 的拖动是**按字节比例估算**，不是精确索引；同一文件内 GOP 越大偏差越明显（一般 < 1 秒）。长期片库建议无损转封装成 MKV（见 `tools/ts2mkv.sh`）。
 - DLNA 的容器枚举依赖设备自身实现，个别设备不提供文件大小，此时该类文件不可 seek。
-- 未实现：投屏推送、在线字幕搜索、云盘直连、截图/GIF、字幕压制。
+- 音乐标签（ID3 / FLAC）在切歌时异步解析文件头，NAS 响应慢时歌名/封面会延迟 1~2 秒出现，不影响播放。
+- APE / WMA 等格式能否播放取决于设备解码器；mp3 / flac / m4a / aac / wav / ogg / opus 全设备可用。
+- 未实现：投屏推送、在线字幕搜索、云盘直连、截图/GIF、字幕压制、音乐歌单自建。
 
 ## 许可
 

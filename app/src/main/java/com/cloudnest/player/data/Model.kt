@@ -85,6 +85,27 @@ data class LibraryItem(
 }
 
 @Serializable
+data class MusicTrack(
+    val id: String,
+    val serverId: String,
+    val path: String,
+    val name: String,
+    val title: String,
+    val artist: String = "",
+    /** 专辑名：优先标签，退化为所在文件夹名 */
+    val album: String = "",
+    val trackNo: Int = 0,
+    /** 解析到才知道，运行时也会被播放器补齐 */
+    val durationMs: Long = 0L,
+    val coverPath: String? = null,
+    val lrcPath: String? = null,
+    val size: Long = 0L,
+    val addedAt: Long = 0L
+) {
+    val albumKey: String get() = "$serverId|$album"
+}
+
+@Serializable
 data class FavoriteEntry(
     val id: String,
     val serverId: String,
@@ -117,6 +138,7 @@ data class AppData(
     val library: List<LibraryItem> = emptyList(),
     val history: List<HistoryEntry> = emptyList(),
     val favorites: List<FavoriteEntry> = emptyList(),
+    val music: List<MusicTrack> = emptyList(),
     val settings: Settings = Settings(),
     val metadataCache: Map<String, MetadataInfo> = emptyMap()
 )
