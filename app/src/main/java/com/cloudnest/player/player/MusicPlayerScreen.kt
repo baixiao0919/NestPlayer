@@ -460,7 +460,10 @@ private fun LyricView(lines: List<Lyrics.Line>, position: Long) {
                 fontSize = if (active) 17.sp else 14.sp,
                 fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp, horizontal = 12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { MusicCore.seekTo(line.timeMs) }
+                    .padding(vertical = 7.dp, horizontal = 12.dp)
             )
         }
     }

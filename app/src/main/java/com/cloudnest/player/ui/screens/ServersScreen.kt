@@ -90,6 +90,23 @@ fun ServersScreen(app: AppState) {
                 )
                 Spacer(Modifier.height(6.dp))
             }
+            item {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(com.cloudnest.player.ui.theme.BrandGradient)
+                        .clickable { app.openLogin() }
+                        .padding(14.dp)
+                ) {
+                    Text("NAS 账号登录", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        "填地址 + 账号 + 密码，自动识别共享并建好服务器，视频和音乐共用一套凭据",
+                        color = Color.White.copy(alpha = 0.78f), fontSize = 11.sp, lineHeight = 16.sp
+                    )
+                }
+            }
             items(data.servers, key = { it.id }) { s ->
                 Column(
                     Modifier

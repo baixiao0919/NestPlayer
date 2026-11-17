@@ -31,6 +31,7 @@ import com.cloudnest.player.ui.screens.DetailScreen
 import com.cloudnest.player.ui.screens.HomeScreen
 import com.cloudnest.player.ui.screens.SearchScreen
 import com.cloudnest.player.ui.screens.MusicScreen
+import com.cloudnest.player.ui.screens.LoginScreen
 import com.cloudnest.player.ui.MiniPlayerBar
 import com.cloudnest.player.ui.screens.ServersScreen
 import com.cloudnest.player.ui.screens.SettingsScreen
@@ -94,6 +95,7 @@ private fun AppRoot() {
             is Screen.Settings -> SettingsScreen(app)
             is Screen.Search -> SearchScreen(app)
             is Screen.Music -> MusicScreen(app)
+            is Screen.Login -> LoginScreen(app)
         }
         // 迷你播放条（音乐页自己会显示，避免重复）
         if (app.current !is Screen.Music) {

@@ -152,7 +152,7 @@ fun MusicScreen(app: AppState) {
             Spacer(Modifier.height(10.dp))
 
             Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("专辑", "艺术家", "歌曲").forEachIndexed { i, label ->
+                listOf("专辑", "艺术家", "歌曲", "最近").forEachIndexed { i, label ->
                     PillChip(label, selected = tab == i, onClick = { tab = i })
                 }
             }
@@ -215,6 +215,42 @@ fun MusicScreen(app: AppState) {
                                 Text("${list.size} 首", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             }
                             Icon(Icons.Rounded.PlayArrow, "播放", tint = BrandCyan, modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
+
+                tab == 3 -> LazyColumn(
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 160.dp, top = 6.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val recent = data.history
+                        .filter { it.key.startsWith("music|") || it.serverId.isNotEmpty() }
+                        .mapNotNull { h ->
+                            tracks.firstOrNull { it.serverId == h.serverId && it.path == h.path }?.let { it to h }
+                        }
+                        .distinctBy { it.first.id }
+                        .take(40)
+                    if (recent.isEmpty()) {
+                        item {
+                            Text(
+                                "还没有播放记录，听几首就会出现在这里",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.5.sp,
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
+                            )
+                        }
+                    }
+                    items(recent, key = { it.first.id }) { (track, h) ->
+                        TrackRow(track, isCurrent = track.id == MusicCore.currentId) {
+                            play(app, tracks, tracks.indexOf(track))
+                        }
+                        if (h.durationMs > 0) {
+                            Text(
+                                "上次听到 " + com.cloudnest.player.lib.Lyrics.formatMs(h.positionMs),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.sp,
+                                modifier = Modifier.padding(start = 64.dp, bottom = 6.dp)
+                            )
                         }
                     }
                 }

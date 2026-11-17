@@ -26,6 +26,7 @@ sealed interface Screen {
     data object Settings : Screen
     data object Search : Screen
     data object Music : Screen
+    data object Login : Screen
 }
 
 class AppState(val context: Context, private val scope: CoroutineScope) {
@@ -162,6 +163,10 @@ class AppState(val context: Context, private val scope: CoroutineScope) {
                 notify("音乐扫描失败：${it.message ?: "未知错误"}")
             }
         }
+    }
+
+    fun openLogin() {
+        push(Screen.Login)
     }
 
     fun openMusicPlayer() {

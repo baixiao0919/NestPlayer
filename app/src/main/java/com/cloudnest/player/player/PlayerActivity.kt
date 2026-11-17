@@ -70,6 +70,8 @@ class PlayerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Store.init(this)
         StreamProxy.start()
+        // 视频和音乐不能同时出声：进视频播放器先把音乐停掉
+        runCatching { MusicCore.pause() }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.systemBars())
