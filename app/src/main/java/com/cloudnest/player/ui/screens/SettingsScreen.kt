@@ -154,7 +154,12 @@ fun SettingsScreen(app: AppState) {
             }
 
             SettingGroup("关于") {
-                Text("云巢影音 NestPlayer ${BuildConfig.VERSION_NAME}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("云巢影音 NestPlayer ${BuildConfig.VERSION_NAME}", fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { app.checkUpdate(true) }) {
+                        Text("检查更新", fontSize = 12.sp)
+                    }
+                }
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "五种协议统一走本地流代理（127.0.0.1:${StreamProxy.port}），支持拖动进度、外挂字幕。\n" +

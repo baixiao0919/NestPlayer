@@ -1,5 +1,7 @@
 package com.cloudnest.player.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -11,7 +13,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -79,6 +84,8 @@ private fun AppRoot() {
         }
     }
 
+    LaunchedEffect(Unit) { app.checkUpdate(false) }
+
     LaunchedEffect(app.message) {
         app.message?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -103,6 +110,10 @@ private fun AppRoot() {
         }
     }
 
+    app.updateInfo?.let { info ->
+        UpdateDialog(info) { app.updateInfo = null }
+    }
+
     (app.musicScanningMessage ?: app.scanningMessage)?.let { msg ->
         Dialog(onDismissRequest = {}) {
             Surface(shape = RoundedCornerShape(22.dp), color = Color(0xFF12121A), border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))) {
@@ -115,6 +126,54 @@ private fun AppRoot() {
                     Text(msg, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     Text("扫描期间可以继续其他操作", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
+                }
+            }
+        }
+    }
+}
+
+/** 发现新版本：展示版本号与更新摘要，点「去更新」打开发布页下载 */
+@Composable
+private fun UpdateDialog(info: com.cloudnest.player.net.UpdateChecker.Info, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = RoundedCornerShape(22.dp), color = Color(0xFF12121A)) {
+            Column(Modifier.padding(20.dp).width(280.dp)) {
+                Text(
+                    "发现新版本 v${info.version}",
+                    color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "当前 ${com.cloudnest.player.BuildConfig.VERSION_NAME}" +
+                        if (info.size > 0) " · 新包 ${info.size / 1024 / 1024} MB" else "",
+                    color = Color.White.copy(alpha = 0.55f), fontSize = 11.5.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    info.notes.lineSequence().filter { it.isNotBlank() }.take(8).joinToString("\n"),
+                    color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp, lineHeight = 18.sp,
+                    maxLines = 10, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(14.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) {
+                        Text("稍后", color = Color.White.copy(alpha = 0.6f))
+                    }
+                    Spacer(Modifier.width(6.dp))
+                    Button(
+                        onClick = {
+                            val url = info.apkUrl ?: info.pageUrl
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                            }
+                            onDismiss()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = com.cloudnest.player.ui.theme.BrandCyan),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text("去更新", color = Color(0xFF07070C), fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

@@ -12,6 +12,7 @@ import com.cloudnest.player.lib.LibraryScanner
 import com.cloudnest.player.net.FsManager
 import com.cloudnest.player.net.MediaFiles
 import com.cloudnest.player.net.StreamProxy
+import com.cloudnest.player.net.UpdateChecker
 import com.cloudnest.player.player.PlayerActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ class AppState(val context: Context, private val scope: CoroutineScope) {
     var scanningMessage by mutableStateOf<String?>(null)
     var musicScanningMessage by mutableStateOf<String?>(null)
     var message by mutableStateOf<String?>(null)
+    var updateInfo by mutableStateOf<UpdateChecker.Info?>(null)
 
     fun push(screen: Screen) {
         stack = stack + screen
@@ -161,6 +163,28 @@ class AppState(val context: Context, private val scope: CoroutineScope) {
             }.onFailure {
                 musicScanningMessage = null
                 notify("音乐扫描失败：${it.message ?: "未知错误"}")
+            }
+        }
+    }
+
+    /** 检查更新：manual=true 时无论结果都提示；自动检查 24 小时最多一次 */
+    fun checkUpdate(manual: Boolean = false) {
+        val ctx = context
+        val prefs = ctx.getSharedPreferences("nest_update", android.content.Context.MODE_PRIVATE)
+        val last = prefs.getLong("last_check", 0L)
+        if (!manual && System.currentTimeMillis() - last < 24L * 60 * 60 * 1000) return
+        scope.launch {
+            val r = withContext(Dispatchers.IO) { runCatching { UpdateChecker.latest() } }
+            prefs.edit().putLong("last_check", System.currentTimeMillis()).apply()
+            val info = r.getOrNull()
+            if (info == null) {
+                if (manual) notify("检查更新失败，检查一下网络")
+                return@launch
+            }
+            if (UpdateChecker.isNewer(info.version, com.cloudnest.player.BuildConfig.VERSION_NAME)) {
+                updateInfo = info
+            } else if (manual) {
+                notify("已是最新版本 ${com.cloudnest.player.BuildConfig.VERSION_NAME}")
             }
         }
     }

@@ -2,15 +2,15 @@
 
 一个专为 **NAS 视频 + 音乐** 做的 Android 播放器：五种协议一套播放内核，海报墙 + 文件浏览 + 音乐库三模式，交互对齐主流播放器（MX / VLC / 迅雷影音 / 网易云）的习惯。
 
-- 包名 `com.cloudnest.player` · 版本 **1.3.0** · minSdk 24（Android 7.0） · targetSdk 34
+- 包名 `com.cloudnest.player` · 版本 **1.4.0** · minSdk 24（Android 7.0） · targetSdk 34
 - 技术栈：Kotlin + Jetpack Compose + Media3 (ExoPlayer)
 - 无广告、无账号、无云服务依赖，你的视频只在你的 NAS 和手机之间流转
 
 ## 下载最新版
 
-[**NestPlayer-1.3.0.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.3.0.apk) — 18.7 MB，已签名，可直接覆盖升级
+[**NestPlayer-1.4.0.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.4.0.apk) — 18.7 MB，已签名，可直接覆盖升级
 
-更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。1.3.0 新增 NAS 账号登录（填账号密码自动建服务器，视频音乐共用）、音乐「最近」标签与歌词点击跳转，并修掉视频与音乐同时出声的问题。1.2.2 改为服务端自行前台化（服务启动即 `startForeground`，不再依赖 Media3 挂通知的时机），彻底消除音乐播放时的前台服务闪退；1.2.1 初版修过同类问题（`ForegroundServiceDidNotStartInTimeException`）并补齐 Android 14 媒体前台服务权限；1.2.0 新增 NAS 音乐播放器（音乐库/后台播放/通知栏/锁屏/歌词/均衡器），原有视频链路不变；1.1.3 修掉的 `.ts` 闪退回归（`SeekMap.getDurationUs` 自递归 `StackOverflowError`）继续保留，详见 [v1.3.0 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.3.0)。
+更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。1.3.0 新增 NAS 账号登录（填账号密码自动建服务器，视频音乐共用）、音乐「最近」标签与歌词点击跳转，并修掉视频与音乐同时出声的问题。1.2.2 改为服务端自行前台化（服务启动即 `startForeground`，不再依赖 Media3 挂通知的时机），彻底消除音乐播放时的前台服务闪退；1.2.1 初版修过同类问题（`ForegroundServiceDidNotStartInTimeException`）并补齐 Android 14 媒体前台服务权限；1.2.0 新增 NAS 音乐播放器（音乐库/后台播放/通知栏/锁屏/歌词/均衡器），原有视频链路不变；1.1.3 修掉的 `.ts` 闪退回归（`SeekMap.getDurationUs` 自递归 `StackOverflowError`）继续保留，详见 [v1.4.0 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.4.0)。1.4.0 加入自动更新检查：启动时比对 GitHub latest release，有新版直接弹窗提示并可一键跳转下载。
 
 ## 功能
 
@@ -43,6 +43,12 @@
 - 倍速 0.5×–4.0×、音轨切换、字幕切换与本地外挂字幕、画面比例（适应/裁剪/拉伸）、旋转、锁屏防误触
 - 视频信息面板（分辨率/帧率/编码/码率/声道/采样率）
 - 续播记忆、播放记录持久化
+
+**自动更新（1.4.0 新增）**
+
+- 启动时自动比对 GitHub latest release，每天最多查一次
+- 有新版本弹窗显示版本号、包体积、更新摘要，一键打开下载
+- 设置 → 关于 → 「检查更新」可手动查
 
 **账号登录（1.3.0 新增）**
 
