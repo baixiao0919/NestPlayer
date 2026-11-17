@@ -106,7 +106,9 @@ data class Settings(
     val hardwareDecode: Boolean = true,
     val playerOrientation: Int = 0,  // 0 自动 1 竖屏 2 横屏
     val scanDepth: Int = 6,
-    val videoExtensionsOnly: Boolean = true
+    val videoExtensionsOnly: Boolean = true,
+    /** .ts/.m2ts 等无索引容器：估时后是否接管 seek（关掉则退回顺序播放，兼容性最保守） */
+    val tsSeekEnabled: Boolean = true
 )
 
 @Serializable

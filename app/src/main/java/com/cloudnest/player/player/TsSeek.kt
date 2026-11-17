@@ -5,11 +5,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.Extractor
 import androidx.media3.extractor.ExtractorInput
 import androidx.media3.extractor.ExtractorOutput
+import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.PositionHolder
 import androidx.media3.extractor.SeekMap
 import androidx.media3.extractor.SeekPoint
 import androidx.media3.extractor.ts.TsExtractor
+import com.cloudnest.player.data.Store
 import com.cloudnest.player.net.FsManager
 import com.cloudnest.player.net.MediaFiles
 import com.cloudnest.player.net.StreamProxy
@@ -39,13 +41,22 @@ object TsSeek {
 
     fun isTs(name: String): Boolean = MediaFiles.ext(name) in tsExt
 
+    private val baseFactory = DefaultExtractorsFactory()
+
     fun factory(): ExtractorsFactory = object : ExtractorsFactory {
-        override fun createExtractors(): Array<Extractor> = arrayOf(TsExtractor())
+        override fun createExtractors(): Array<Extractor> = baseFactory.createExtractors()
 
         override fun createExtractors(uri: Uri, responseHeaders: Map<String, List<String>>): Array<Extractor> {
-            val info = infoFor(uri.toString())
-            val delegate = TsExtractor()
-            return if (info == null) arrayOf(delegate) else arrayOf(SeekableTsExtractor(delegate, info.durationUs, info.size))
+            val plain = baseFactory.createExtractors(uri, responseHeaders)
+            val name = uri.lastPathSegment ?: ""
+            if (!isTs(name)) return plain
+            if (!Store.data.value.settings.tsSeekEnabled) return plain
+            return try {
+                val info = infoFor(uri.toString())
+                if (info == null) plain else arrayOf(SeekableTsExtractor(TsExtractor(), info.durationUs, info.size))
+            } catch (t: Throwable) {
+                plain
+            }
         }
     }
 
@@ -53,7 +64,10 @@ object TsSeek {
         cache[url]?.let { return it }
         if (failed[url] == true) return null
         val info = runCatching { probe(url) }.getOrNull()
-        if (info != null && info.durationUs > 0 && info.size > 0) {
+        // 合理性校验：单集视频 5 秒 ~ 24 小时，否则不接管（避免时间戳异常文件把 seek 轴拉坏）
+        if (info != null && info.size > 0 &&
+            info.durationUs in 5_000_000L..(24L * 3600 * 1_000_000L)
+        ) {
             cache[url] = info
             return info
         }
@@ -162,27 +176,34 @@ object TsSeek {
 @UnstableApi
 class SeekableTsExtractor(
     private val delegate: TsExtractor,
-    private val durationUs: Long,
-    private val size: Long
+    private val totalUs: Long,
+    private val totalBytes: Long
 ) : Extractor {
 
     private var emitted = false
 
-    private val map = object : SeekMap {
+    // 注意：这里绝不能直接引用名为 durationUs 的属性——SeekMap.getDurationUs() 会在匿名对象里
+    // 生成同名合成属性，导致 getDurationUs 自己调自己（StackOverflowError）。
+    private val linearMap = object : SeekMap {
         override fun isSeekable(): Boolean = true
 
-        override fun getDurationUs(): Long = durationUs
+        override fun getDurationUs(): Long = totalUs
 
         override fun getSeekPoints(timeUs: Long): SeekMap.SeekPoints {
-            val clamped = timeUs.coerceIn(0L, durationUs)
-            val raw = (clamped.toDouble() / durationUs.toDouble() * size.toDouble()).toLong()
+            val clamped = timeUs.coerceIn(0L, totalUs)
+            val raw = (clamped.toDouble() / totalUs.toDouble() * totalBytes.toDouble()).toLong()
             // 对齐到 TS 包边界，方便解析器快速同步
             val pos = (raw / 188L) * 188L
-            return SeekMap.SeekPoints(SeekPoint(clamped, pos.coerceIn(0L, (size - 1).coerceAtLeast(0L))))
+            val safePos = pos.coerceIn(0L, (totalBytes - 1L).coerceAtLeast(0L))
+            return SeekMap.SeekPoints(SeekPoint(clamped, safePos))
         }
     }
 
-    override fun sniff(input: ExtractorInput): Boolean = delegate.sniff(input)
+    override fun sniff(input: ExtractorInput): Boolean = try {
+        delegate.sniff(input)
+    } catch (e: Exception) {
+        throw IOException(e)
+    }
 
     override fun init(output: ExtractorOutput) {
         emitted = false
@@ -192,20 +213,30 @@ class SeekableTsExtractor(
             override fun seekMap(seekMap: SeekMap) {
                 if (!emitted) {
                     emitted = true
-                    output.seekMap(map)
+                    output.seekMap(linearMap)
                 }
             }
         })
         if (!emitted) {
             emitted = true
-            output.seekMap(map)
+            output.seekMap(linearMap)
         }
     }
 
-    override fun read(input: ExtractorInput, seekPosition: PositionHolder): Int =
+    override fun read(input: ExtractorInput, seekPosition: PositionHolder): Int = try {
         delegate.read(input, seekPosition)
+    } catch (e: IOException) {
+        throw e
+    } catch (e: Exception) {
+        // 解析异常绝不能冒到进程级：包成 IO 异常让播放器自己报错
+        throw IOException(e)
+    }
 
-    override fun seek(position: Long, timeUs: Long) = delegate.seek(position, timeUs)
+    override fun seek(position: Long, timeUs: Long) = try {
+        delegate.seek(position, timeUs)
+    } catch (e: Exception) {
+        throw IOException(e)
+    }
 
     override fun release() = delegate.release()
 }

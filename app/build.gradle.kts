@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -13,20 +15,35 @@ android {
         applicationId = "com.cloudnest.player"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.1.2"
+        versionCode = 5
+        versionName = "1.1.3"
         multiDexEnabled = true
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
         }
     }
 
+    // 签名口令不写进代码：从 local.properties（已 gitignore）或环境变量读取。
+    // 应用方式见 README「自己构建」一节。
+    val keystoreFile = File(rootDir, "nestplayer.keystore")
+    val localProps = Properties().apply {
+        val f = File(rootDir, "local.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    val storePass = localProps.getProperty("keystore.password") ?: System.getenv("KEYSTORE_PASSWORD").orEmpty()
+    val keyPass = localProps.getProperty("key.password") ?: System.getenv("KEY_PASSWORD").orEmpty()
+    val alias = localProps.getProperty("key.alias") ?: System.getenv("KEY_ALIAS") ?: "nestplayer"
+
     signingConfigs {
         create("release") {
-            storeFile = file("../nestplayer.keystore")
-            storePassword = "nestplayer2026"
-            keyAlias = "nestplayer"
-            keyPassword = "nestplayer2026"
+            if (keystoreFile.exists() && storePass.isNotEmpty()) {
+                storeFile = keystoreFile
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
+                enableV1Signing = true
+                enableV2Signing = true
+            }
         }
     }
 
@@ -34,10 +51,14 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
-            signingConfig = signingConfigs.getByName("release")
+            if (keystoreFile.exists() && storePass.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
-            signingConfig = signingConfigs.getByName("release")
+            if (keystoreFile.exists() && storePass.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

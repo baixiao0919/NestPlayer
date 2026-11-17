@@ -86,6 +86,9 @@ fun SettingsScreen(app: AppState) {
             SettingGroup("播放") {
                 SwitchRow("自动记忆播放进度", s.autoResume) { Store.setSettings(s.copy(autoResume = it)) }
                 SwitchRow("硬解优先（兼容性更好关掉）", s.hardwareDecode) { Store.setSettings(s.copy(hardwareDecode = it)) }
+                SwitchRow("TS/M2TS 估时拖动（个别机型闪退可关掉）", s.tsSeekEnabled) {
+                    Store.setSettings(s.copy(tsSeekEnabled = it))
+                }
                 Spacer(Modifier.height(8.dp))
                 Text("双击快进/后退步长：${s.seekStep} 秒", fontSize = 13.sp)
                 Slider(

@@ -89,3 +89,17 @@ MIT License，见 `LICENSE`。第三方库许可见文末。
 - ECS nfs-client：Apache-2.0
 - OkHttp：Apache-2.0
 - Coil：Apache-2.0
+
+## 免责声明 / Disclaimer
+
+本项目是一个**本地网络媒体播放客户端**，仅提供协议连接与媒体解码能力，作者不提供、不分发、不托管任何影视内容或第三方源站。
+
+- 你通过本应用访问的所有文件、服务器和账号**均由你自己提供**，请确保你对这些内容拥有合法访问与观看权利。
+- 请遵守你所在地区的法律法规以及内容版权方的授权范围。因使用本应用产生的任何版权、合规或数据责任，由使用者自行承担。
+- 本项目按「现状」提供，不附带任何明示或暗示的担保；作者不对数据丢失、播放失败、设备异常等后果负责。
+- 应用运行在纯局域网内，不向任何第三方服务器上传你的服务器地址、账号或媒体信息；抓取海报信息时仅向 TMDb 发送影片名称查询。
+- 仓库与安装包中**不包含**任何账号、密钥、私有服务器地址或个人数据；示例中的地址均为占位符。
+
+本仓库以 MIT 协议开源，你可以自由使用、修改、分发，但请保留原作者署名与上述声明。
+
+> This project is a local-network media client only. It does not host, provide or distribute any media content. All servers and credentials are supplied by the user; you are solely responsible for lawful use. Provided "as is", without warranty of any kind.
