@@ -470,7 +470,7 @@ fun MiniPlayerBar(modifier: Modifier = Modifier) {
                 tint = Color.White.copy(alpha = 0.7f),
                 modifier = Modifier.size(28.dp).clip(CircleShape)
                     .clickable {
-                        com.cloudnest.player.player.MusicCore.next()
+                        com.cloudnest.player.player.MusicCore.next(context)
                         tick++
                     }.padding(4.dp)
             )

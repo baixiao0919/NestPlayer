@@ -79,11 +79,20 @@ object MusicCore {
         return p
     }
 
-    /** 供 MediaSessionService 使用 */
-    fun attach(context: Context): ExoPlayer {
-        val p = ensure(context)
-        runCatching { MusicService.start(context) }
-        return p
+    /** 取播放器实例；不在这里启动前台服务（启动时机见 startServiceWhenPlaying） */
+    fun attach(context: Context): ExoPlayer = ensure(context)
+
+    /**
+     * 只有「马上要出声」时才启动前台服务。
+     *
+     * Android 要求 startForegroundService() 后 5 秒内必须 startForeground()，
+     * 而 Media3 的 MediaSessionService 是在播放器进入 play 状态时才挂通知。
+     * 所以顺序必须是：先 playWhenReady = true，再 startForegroundService，
+     * 否则会抛 ForegroundServiceDidNotStartInTimeException 直接闪退。
+     */
+    private fun startServiceWhenPlaying(context: Context) {
+        if (exo?.playWhenReady != true) return
+        runCatching { MusicServiceLauncher.start(context) }
     }
 
     private fun itemOf(context: Context, track: MusicTrack): MediaItem {
@@ -111,6 +120,7 @@ object MusicCore {
         p.prepare()
         p.playWhenReady = true
         currentId = tracks[idx].id
+        startServiceWhenPlaying(context)
         prepareTrackAssets(context, tracks[idx])
     }
 
@@ -172,9 +182,12 @@ object MusicCore {
 
     fun toggle(context: Context) {
         val p = attach(context)
-        if (p.isPlaying) p.pause() else {
+        if (p.isPlaying) {
+            p.pause()
+        } else {
             if (p.playbackState == Player.STATE_IDLE) p.prepare()
             p.playWhenReady = true
+            startServiceWhenPlaying(context)
         }
     }
 
@@ -182,16 +195,21 @@ object MusicCore {
         exo?.pause()
     }
 
-    fun next() {
+    fun next(context: Context? = null) {
         exo?.seekToNext()
         exo?.playWhenReady = true
+        context?.let { startServiceWhenPlaying(it) }
     }
 
-    fun previous() {
+    fun previous(context: Context? = null) {
         val p = exo ?: return
         if (p.currentPosition > 3000) p.seekTo(0) else p.seekToPrevious()
         p.playWhenReady = true
+        context?.let { startServiceWhenPlaying(it) }
     }
+
+    /** 播放已在进行时，把前台服务/通知补起来（例如服务被系统回收后从队列切歌） */
+    fun syncForeground(context: Context) = startServiceWhenPlaying(context)
 
     fun seekTo(ms: Long) = exo?.seekTo(ms)
 

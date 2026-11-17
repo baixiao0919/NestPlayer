@@ -2,15 +2,15 @@
 
 一个专为 **NAS 视频 + 音乐** 做的 Android 播放器：五种协议一套播放内核，海报墙 + 文件浏览 + 音乐库三模式，交互对齐主流播放器（MX / VLC / 迅雷影音 / 网易云）的习惯。
 
-- 包名 `com.cloudnest.player` · 版本 **1.2.0** · minSdk 24（Android 7.0） · targetSdk 34
+- 包名 `com.cloudnest.player` · 版本 **1.2.1** · minSdk 24（Android 7.0） · targetSdk 34
 - 技术栈：Kotlin + Jetpack Compose + Media3 (ExoPlayer)
 - 无广告、无账号、无云服务依赖，你的视频只在你的 NAS 和手机之间流转
 
 ## 下载最新版
 
-[**NestPlayer-1.2.0.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.2.0.apk) — 18.6 MB，已签名，可直接覆盖升级
+[**NestPlayer-1.2.1.apk**](https://github.com/baixiao0919/NestPlayer/releases/latest/download/NestPlayer-1.2.1.apk) — 18.7 MB，已签名，可直接覆盖升级
 
-更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。1.2.0 新增 NAS 音乐播放器（音乐库/后台播放/通知栏/锁屏/歌词/均衡器），原有视频链路不变；1.1.3 修掉的 `.ts` 闪退回归（`SeekMap.getDurationUs` 自递归 `StackOverflowError`）继续保留，详见 [v1.2.0 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.2.0)。
+更新日志见 [Releases](https://github.com/baixiao0919/NestPlayer/releases)。1.2.1 修掉 1.2.0 音乐首次播放时的前台服务闪退（`ForegroundServiceDidNotStartInTimeException`）并补齐 Android 14 媒体前台服务权限；1.2.0 新增 NAS 音乐播放器（音乐库/后台播放/通知栏/锁屏/歌词/均衡器），原有视频链路不变；1.1.3 修掉的 `.ts` 闪退回归（`SeekMap.getDurationUs` 自递归 `StackOverflowError`）继续保留，详见 [v1.2.1 说明](https://github.com/baixiao0919/NestPlayer/releases/tag/v1.2.1)。
 
 ## 功能
 

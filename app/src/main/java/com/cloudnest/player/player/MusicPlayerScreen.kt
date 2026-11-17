@@ -249,7 +249,7 @@ fun MusicPlayerScreen() {
                 Icon(
                     Icons.Rounded.SkipPrevious, "上一首",
                     tint = Color.White.copy(alpha = 0.85f),
-                    modifier = Modifier.size(34.dp).clickable { MusicCore.previous() }
+                    modifier = Modifier.size(34.dp).clickable { MusicCore.previous(context) }
                 )
                 Box(
                     Modifier
@@ -269,7 +269,7 @@ fun MusicPlayerScreen() {
                 Icon(
                     Icons.Rounded.SkipNext, "下一首",
                     tint = Color.White.copy(alpha = 0.85f),
-                    modifier = Modifier.size(34.dp).clickable { MusicCore.next() }
+                    modifier = Modifier.size(34.dp).clickable { MusicCore.next(context) }
                 )
                 Icon(
                     when (repeat) {
@@ -515,6 +515,7 @@ private fun SheetRow(text: String, selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun QueueSheet() {
+    val context = LocalContext.current
     Column {
         SheetTitle("播放列表 · ${MusicCore.queue.size} 首")
         LazyColumn(Modifier.heightIn(max = 460.dp)) {
@@ -526,6 +527,7 @@ private fun QueueSheet() {
                         .clickable {
                             MusicCore.player?.seekTo(MusicCore.queue.indexOf(t), 0)
                             MusicCore.player?.playWhenReady = true
+                            MusicCore.syncForeground(context)
                         }
                         .padding(horizontal = 20.dp, vertical = 11.dp),
                     verticalAlignment = Alignment.CenterVertically
