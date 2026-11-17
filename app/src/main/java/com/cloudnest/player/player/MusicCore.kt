@@ -304,11 +304,19 @@ object MusicCore {
     }
 }
 
-/** 让 Service 与 UI 用同一套启动方式 */
+/**
+ * 让 Service 与 UI 用同一套启动方式。
+ *
+ * 优先用 startService：服务自己在 onStartCommand 里立刻 startForeground()，
+ * 不再依赖 Media3 挂通知的时机，也就不会撞 5 秒超时。
+ * 只有在后台被系统拒绝普通启动时，才退回 startForegroundService（此时服务也会立刻前台化）。
+ */
 object MusicServiceLauncher {
     fun start(context: Context) {
         val intent = Intent(context, MusicService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
-        else context.startService(intent)
+        val ok = runCatching { context.startService(intent) }.isSuccess
+        if (!ok && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            runCatching { context.startForegroundService(intent) }
+        }
     }
 }

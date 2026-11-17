@@ -15,8 +15,8 @@ android {
         applicationId = "com.cloudnest.player"
         minSdk = 24
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.2.1"
+        versionCode = 8
+        versionName = "1.2.2"
         multiDexEnabled = true
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
